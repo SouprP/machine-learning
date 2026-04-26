@@ -5,7 +5,7 @@ class TensorFlowCNN(BaseModel):
     def __init__(self, name="TensorFlow_CNN"):
         super().__init__(name=name)
         
-    def build(self, input_shape=(32, 32, 3), num_classes=10, learning_rate=0.0001):
+    def build(self, input_shape=(32, 32, 3), num_classes=10, learning_rate=0.0001, **kwargs):
         """
         Builds and compiles the CNN architecture for TensorFlow.
         """
@@ -47,7 +47,7 @@ class TensorFlowCNN(BaseModel):
         
         self.model.summary()
 
-    def train(self, x_train, y_train, epochs=15, batch_size=32, validation_split=0.2):
+    def train(self, x_train, y_train, epochs=15, batch_size=32, validation_split=0.2, **kwargs):
         """Trains the model with the given dataset."""
         if self.model is None:
             raise ValueError("Model is not built yet. Call build() first.")

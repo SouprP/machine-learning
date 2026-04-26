@@ -6,8 +6,14 @@ from utils.data import load_test_data, NEEDED_CLASSES, CLASS_NAMES
 # ============================================================
 # CONFIGURATION BLOCK - SWAP MODELS HERE
 # ============================================================
-from core.cnn.model import NumPyCNN as ActiveModel
-MODEL_SAVE_NAME = "gtsrb_numpy.pkl" 
+# from core.cnn.model import NumPyCNN as ActiveModel
+# from core.cnn_tensor.model import TensorFlowCNN as ActiveModel
+# from core.random_forest.model import RandomForestModel as ActiveModel
+# from core.mlp.model import MLPModel as ActiveModel
+from core.knn.model import KNNModel as ActiveModel
+
+# .pkl or .keras
+MODEL_SAVE_NAME = "gtsrb_model_knn.pkl" 
 # ============================================================
 
 

@@ -15,7 +15,7 @@ class Sequential(BaseModel):
     def add(self, layer):
         self.layers.append(layer)
 
-    def train(self, x_train, y_train, epochs=5, batch_size=32, learning_rate=0.01):
+    def train(self, x_train, y_train, epochs=5, batch_size=32, learning_rate=0.01, **kwargs):
         x_train_np = np.transpose(x_train, (0, 3, 1, 2)) 
         num_samples = x_train_np.shape[0]
         
@@ -85,7 +85,7 @@ class NumPyCNN(Sequential):
     def __init__(self, name="NumPy_CNN"):
         super().__init__(name=name)
 
-    def build(self, input_shape=(32, 32, 3), num_classes=10):
+    def build(self, input_shape=(32, 32, 3), num_classes=10, **kwargs):
         
         self.layers = [
             # Block 1: feature extraction
