@@ -54,6 +54,30 @@ class TensorFlowCNN(BaseModel):
             
         print(f"[{self.name}] Starting training...")
         
+        import time
+        import numpy as np
+        from utils.metrics import compute_metrics, EpochMetricsLogger
+        
+        logger = EpochMetricsLogger(self.name)
+        
+        class MetricsCallback(tf.keras.callbacks.Callback):
+            def on_epoch_begin(self, epoch, logs=None):
+                self.epoch_time_start = time.time()
+                
+            def on_epoch_end(self, epoch, logs=None):
+                train_time = time.time() - self.epoch_time_start
+                # Evaluate metrics on validation partition, or train if none
+                # Since evaluating on whole train is slow, let's just evaluate on a subset or full train
+                start_infer = time.time()
+                y_proba = self.model.predict(x_train, verbose=0)
+                infer_time = time.time() - start_infer
+                
+                y_pred = np.argmax(y_proba, axis=1)
+                metrics = compute_metrics(y_train, y_pred, y_proba, train_time, infer_time)
+                logger.log_epoch(epoch + 1, metrics)
+                
+        metrics_callback = MetricsCallback()
+        
         # early stopping to halt training if the model stops improving
         early_stopping = tf.keras.callbacks.EarlyStopping(
             monitor='val_loss', 
@@ -66,7 +90,7 @@ class TensorFlowCNN(BaseModel):
             epochs=epochs,
             batch_size=batch_size,
             validation_split=validation_split,
-            callbacks=[early_stopping]
+            callbacks=[early_stopping, metrics_callback]
         )
         return history
 

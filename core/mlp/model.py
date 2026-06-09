@@ -29,10 +29,9 @@ class MLPModel(SklearnBaseModel):
         print(f"[{self.name}] Built pipeline (layers={hidden_layer_sizes}, pca={n_pca})")
 
     def train(self, x_train, y_train, *args, **kwargs):
-        # Call the parent class train to do the standard fitting
+        # call the parent class train to do the standard fitting
         super().train(x_train, y_train, *args, **kwargs)
         
-        # Add our custom MLP readout!
         mlp_step = self.model.named_steps['clf']
         if hasattr(mlp_step, "loss_curve_"):
             n_iter = len(mlp_step.loss_curve_)

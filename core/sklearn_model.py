@@ -13,15 +13,34 @@ class SklearnBaseModel(BaseModel):
         self.model = None  # Will be defined as a Pipeline in subclass build()
 
     def train(self, x_train, y_train, *args, **kwargs):
+        import time
+        from utils.metrics import compute_metrics, EpochMetricsLogger
         print(f"[{self.name}] Training pipeline ...")
+        
+        logger = EpochMetricsLogger(self.name)
+        
         # Flatten (N, H, W, C) to (N, Features)
         X_flat = x_train.reshape(len(x_train), -1)
         
+        start_time = time.time()
         self.model.fit(X_flat, y_train)
+        train_time = time.time() - start_time
         
+        # Compute training metrics
+        start_infer = time.time()
         preds = self.model.predict(X_flat)
-        acc = np.mean(preds == y_train)
-        print(f"[{self.name}] Train accuracy: {acc:.4f}")
+        infer_time = time.time() - start_infer
+        
+        try:
+            proba = self.model.predict_proba(X_flat)
+        except:
+            proba = None
+            
+        metrics = compute_metrics(y_train, preds, proba, train_time, infer_time)
+        print(f"[{self.name}] Train accuracy: {metrics['accuracy']:.4f}")
+        
+        # Log as single epoch
+        logger.log_epoch(1, metrics)
 
     def predict(self, x):
         X_flat = x.reshape(len(x), -1)

@@ -16,14 +16,20 @@ class Sequential(BaseModel):
         self.layers.append(layer)
 
     def train(self, x_train, y_train, epochs=5, batch_size=32, learning_rate=0.01, **kwargs):
+        import time
+        from utils.metrics import compute_metrics, EpochMetricsLogger
+        
         x_train_np = np.transpose(x_train, (0, 3, 1, 2)) 
         num_samples = x_train_np.shape[0]
+        
+        logger = EpochMetricsLogger(self.name)
         
         print(f"[{self.name}] Starting Training...")
         for epoch in range(epochs):
             total_loss = 0
             correct = 0
             
+            start_time = time.time()
             for i in range(0, num_samples, batch_size):
                 x_batch = x_train_np[i:i+batch_size]
                 y_batch = y_train[i:i+batch_size]
@@ -50,9 +56,18 @@ class Sequential(BaseModel):
                 for layer in reversed(self.layers):
                     grad = layer.backward(grad, learning_rate)
                     
+            train_time = time.time() - start_time
             avg_loss = total_loss / num_samples
             accuracy = correct / num_samples
             print(f"Epoch {epoch+1}/{epochs} - Loss: {avg_loss:.4f} - Accuracy: {accuracy:.4f}")
+            
+            # evaluate metrics at end of epoch
+            start_infer = time.time()
+            y_proba = self.predict(x_train)
+            infer_time = time.time() - start_infer
+            y_pred = np.argmax(y_proba, axis=1)
+            metrics = compute_metrics(y_train, y_pred, y_proba, train_time, infer_time)
+            logger.log_epoch(epoch + 1, metrics)
 
     def predict(self, x):
         x_np = np.transpose(x, (0, 3, 1, 2))
